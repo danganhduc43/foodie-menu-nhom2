@@ -1,0 +1,29 @@
+/* --- HIỆU ỨNG HOVER CHO CARD MÓN ĂN --- */
+
+/* 1. Thiết lập trạng thái gốc cho Card */
+.card {
+    /* transition giúp các thay đổi (khi hover) diễn ra từ từ, mượt mà trong 0.3 giây */
+    transition: transform 0.3s ease, box-shadow 0.3s ease; 
+}
+
+/* 2. Trạng thái khi di chuột (hover) vào Card */
+/* Lưu ý: Không áp dụng hiệu ứng này cho các món đã hết (có class opacity-50) */
+.card:not(.opacity-50):hover {
+    transform: translateY(-8px); /* Đẩy thẻ nổi lên trên 8px */
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15) !important; /* Đổ bóng to và đậm hơn */
+    cursor: pointer; /* Đổi con trỏ chuột thành hình bàn tay */
+}
+
+/* --- TÙY CHỈNH THÊM CHO ẢNH VÀ TRẠNG THÁI --- */
+
+/* 3. Ảnh của món ăn */
+.card-img-top {
+    height: 200px;
+    object-fit: cover; /* Giúp ảnh tự cắt xén cho vừa khung mà không bị méo tỷ lệ */
+}
+
+/* 4. Làm đẹp thêm cho trạng thái "Hết món" */
+.opacity-50 {
+    opacity: 0.6 !important; /* Hơi mờ đi một chút */
+    filter: grayscale(80%); /* Biến ảnh thành màu xám đen để trông giống hết hàng thật */
+}
