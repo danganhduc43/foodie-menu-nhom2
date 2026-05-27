@@ -4,274 +4,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Food Paradise</title>
-
+    <title>3 Anh Em</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-
     <link rel="stylesheet" href="style.css">
-    
-    <style>
-        /* Bạn có thể viết thêm CSS bổ sung tại đây nếu cần */
-        .card-img-top {
-            height: 200px;
-            object-fit: cover;
-        }
-    </style>
 </head>
 <body>
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-lg sticky-top">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
         <div class="container">
-            <a class="navbar-brand fw-bold fs-2 text-warning" href="#">
-                🍔 Paradise Food
-            </a>
-            <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#menu">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="menu">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link active" href="#">Trang chủ</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Món ăn</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Khuyến mãi</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Liên hệ</a></li>
-                </ul>
+            <a class="navbar-brand fw-bold text-warning" href="#">🍔 3 Anh Em</a>
+            <div>
+                <a href="#adminSection" class="btn btn-outline-light me-2"><i class="bi bi-shield-lock"></i> Kênh Admin</a>
+                <button class="btn btn-outline-warning" data-bs-toggle="offcanvas" data-bs-target="#miniCart">
+                    <i class="bi bi-cart-fill"></i> Giỏ hàng <span id="cartCount">(0)</span>
+                </button>
             </div>
         </div>
     </nav>
 
-    <section class="hero bg-dark text-white py-5 text-center" style="background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=1470') no-repeat center center/cover;">
-        <div class="container py-5">
-            <h1 class="display-2 fw-bold">Paradise Food</h1>
-            <p class="lead mt-4">Thiên đường ẩm thực ngon - bổ - rẻ</p>
-            <button class="btn btn-warning btn-lg px-5 py-3 mt-3 fw-bold rounded-pill">Đặt món ngay</button>
-        </div>
-    </section>
-
     <section class="container py-5">
-        <div class="row text-center">
-            <div class="col-md-3 mb-3">
-                <div class="stat-box shadow p-3 bg-white rounded">
-                    <h2 class="text-warning fw-bold">50+</h2>
-                    <p class="text-muted mb-0">Món ăn</p>
-                </div>
-            </div>
-            <div class="col-md-3 mb-3">
-                <div class="stat-box shadow p-3 bg-white rounded">
-                    <h2 class="text-warning fw-bold">10K+</h2>
-                    <p class="text-muted mb-0">Khách hàng</p>
-                </div>
-            </div>
-            <div class="col-md-3 mb-3">
-                <div class="stat-box shadow p-3 bg-white rounded">
-                    <h2 class="text-warning fw-bold">24/7</h2>
-                    <p class="text-muted mb-0">Phục vụ</p>
-                </div>
-            </div>
-            <div class="col-md-3 mb-3">
-                <div class="stat-box shadow p-3 bg-white rounded">
-                    <h2 class="text-warning fw-bold">100%</h2>
-                    <p class="text-muted mb-0">Chất lượng</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="container pb-5">
-        <div class="text-center mb-5">
-            <h1 class="fw-bold text-danger">DANH SÁCH MÓN ĂN</h1>
-            <p class="text-muted">Khám phá hàng trăm món ăn hấp dẫn</p>
-        </div>
-
         <div class="row mb-4">
-            <div class="col-md-6 mb-3">
-                <input type="text" id="searchInput" class="form-control form-control-lg" placeholder="🔍 Tìm món ăn...">
+            <div class="col-md-6">
+                <input type="text" id="searchInput" class="form-control" placeholder="🔍 Tìm món ăn...">
             </div>
             <div class="col-md-6">
-                <select id="categoryFilter" class="form-select form-select-lg">
+                <select id="categoryFilter" class="form-select">
                     <option value="all">Tất cả danh mục</option>
-                    <option value="com">Cơm</option>
-                    <option value="pho">Phở</option>
-                    <option value="bun">Bún</option>
-                    <option value="fastfood">Fast Food</option>
-                    <option value="drink">Nước uống</option>
-                    <option value="dessert">Tráng miệng</option>
                 </select>
             </div>
         </div>
 
-        <div class="row" id="foodList">
-            </div>
+        <div id="loadingSpinner" class="text-center my-5">
+            <div class="spinner-border text-warning" role="status"></div>
+            <p class="text-muted mt-2">Đang tải thực đơn từ API...</p>
+        </div>
+
+        <div class="row" id="foodList"></div>
     </section>
 
-    <footer class="bg-dark text-white pt-5 pb-3">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-4 mb-4">
-                    <h3 class="text-warning">Paradise Food</h3>
-                    <p class="text-white-50">Nhà hàng chuyên phục vụ các món ăn chất lượng cao, nguyên liệu sạch và dịch vụ chuyên nghiệp.</p>
-                </div>
-                <div class="col-md-4 mb-4">
-                    <h4>Liên hệ</h4>
-                    <p class="text-white-50">📍 Hà Nội, Việt Nam</p>
-                    <p class="text-white-50">☎ 032 993 6381</p>
-                    <p class="text-white-50">✉ duyyy182007@gmail.com</p>
-                </div>
-                <div class="col-md-4 mb-4">
-                    <h4>Theo dõi</h4>
-                    <div class="social fs-4 d-flex gap-3 text-warning">
-                        <i class="bi bi-facebook"></i>
-                        <i class="bi bi-images"></i>
-                        <i class="bi bi-tiktok"></i>
-                        <i class="bi bi-youtube"></i>
+    <section id="adminSection" class="container py-5 border-top">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow p-4" style="border-radius: 20px;">
+                <h3 class="fw-bold text-dark mb-4">
+                    <i class="bi bi-plus-circle-fill text-warning"></i> Admin - Thêm Món Ăn Mới
+                </h3>
+                
+                <form id="addFoodForm" novalidate>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Tên món ăn</label>
+                        <input type="text" id="adminFoodName" class="form-control" placeholder="Ví dụ: Cơm gà xối mỡ">
                     </div>
-                </div>
-            </div>
-            <hr class="border-secondary">
-            <p class="text-center text-white-50 mb-0">© 2026 Food Paradise - All Rights Reserved</p>
-        </div>
-    </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-    <script>
-        // Cấu hình URL gốc của MockAPI (Thành viên 1 cung cấp)
-        const API_URL = "https://67bc882bd21dd1c631b73e51.mockapi.io/api/v1"; 
-
-        // Biến toàn cục lưu trữ danh sách món ăn gốc từ API về (Quản lý trạng thái cục bộ)
-        let allDishes = []; 
-
-        // Chờ toàn bộ giao diện HTML tải xong mới chạy code logic
-        document.addEventListener('DOMContentLoaded', () => {
-            fetchDishes(); // Gọi API lấy danh sách món ăn đổ vào lưới
-            
-            // 1. Gắn sự kiện lắng nghe khi khách hàng gõ chữ tìm kiếm
-            const searchInput = document.getElementById('searchInput');
-            if (searchInput) {
-                searchInput.addEventListener('input', handleFilterAndSearch);
-            }
-
-            // 2. Gắn sự kiện lắng nghe khi khách hàng chọn danh mục trong thẻ select
-            const categoryFilter = document.getElementById('categoryFilter');
-            if (categoryFilter) {
-                categoryFilter.addEventListener('change', handleFilterAndSearch);
-            }
-        });
-
-        // --- HÀM 1: GỌI API LẤY DANH SÁCH MÓN ĂN VỀ ---
-        function fetchDishes() {
-            // Hiển thị vòng xoay chờ (Loading) trong lúc tải dữ liệu
-            const foodListContainer = document.getElementById('foodList');
-            foodListContainer.innerHTML = `
-                <div class="col-12 text-center py-5">
-                    <div class="spinner-border text-warning" role="status"></div>
-                    <p class="mt-2 text-muted">Đang nạp món ăn ngon...</p>
-                </div>`;
-
-            fetch(`${API_URL}/dishes`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error("Mạng gặp sự cố, không thể lấy dữ liệu");
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    allDishes = data; // Lưu trữ dữ liệu nạp từ API vào mảng toàn cục
-                    renderFoodMenu(allDishes); // Đẩy mảng đi in ra màn hình
-                })
-                .catch(error => {
-                    console.error("Lỗi kết nối API:", error);
-                    // Thao tác DOM báo lỗi trực quan cho người dùng nếu API sập
-                    foodListContainer.innerHTML = `
-                        <div class="col-12 text-center py-5">
-                            <div class="alert alert-danger d-inline-block">
-                                ❌ Không thể tải danh sách thực đơn. Vui lòng thử lại sau!
-                            </div>
-                        </div>`;
-                });
-        }
-
-        // --- HÀM 2: VẼ CÁC CARD MÓN ĂN RA GIAO DIỆN (GRID SYSTEM & RESPONSIVE) ---
-        function renderFoodMenu(dishesArray) {
-            const foodListContainer = document.getElementById('foodList');
-            
-            // Nếu mảng rỗng (không tìm thấy món nào khớp khi tìm kiếm)
-            if (dishesArray.length === 0) {
-                foodListContainer.innerHTML = `
-                    <div class="col-12 text-center py-5">
-                        <p class="text-muted fs-5">Không tìm thấy món ăn nào phù hợp với yêu cầu.</p>
-                    </div>`;
-                return;
-            }
-
-            let htmlBuilder = ''; // Chuỗi tạm tích lũy mã HTML
-
-            // Sử dụng vòng lặp for cơ bản để duyệt qua danh sách
-            for (let i = 0; i < dishesArray.length; i++) {
-                let item = dishesArray[i];
-
-                // Xử lý logic trạng thái "Còn món" / "Hết món" bằng toán tử ba ngôi
-                let isOutOfStock = !item.isAvailable;
-                let opacityStyle = isOutOfStock ? 'opacity-50' : '';
-                let badgeComponent = isOutOfStock ? '<span class="badge bg-danger position-absolute top-0 end-0 m-2 fs-6 shadow-sm">Hết hàng</span>' : '';
-                let buttonStatus = isOutOfStock ? 'disabled' : '';
-                let buttonText = isOutOfStock ? 'Tạm hết' : 'Đặt món ngay';
-
-                // Tích hợp Grid Responsive chuẩn Bootstrap 5 bằng cách đặt class cột:
-                // col-12 (điện thoại), col-sm-6 (màn hình nhỏ), col-md-4 (máy tính bảng), col-lg-3 (máy tính lớn)
-                htmlBuilder += `
-                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
-                        <div class="card h-100 shadow-sm position-relative border-0 rounded-3 overflow-hidden ${opacityStyle}">
-                            <img src="${item.image}" class="card-img-top" alt="${item.name}">
-                            ${badgeComponent}
-                            <div class="card-body d-flex flex-column">
-                                <h5 class="card-title fw-bold text-dark">${item.name}</h5>
-                                <p class="card-text text-muted small flex-grow-1">${item.description || 'Món ăn thơm ngon, đậm đà hương vị truyền thống.'}</p>
-                                <div class="d-flex justify-content-between align-items-center mt-3">
-                                    <span class="text-danger fw-bold fs-5">${Number(item.price).toLocaleString('vi-VN')}đ</span>
-                                    <button class="btn btn-warning btn-sm fw-bold px-3 rounded-pill" ${buttonStatus}>
-                                        ${buttonText}
-                                    </button>
-                                </div>
-                            </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Danh mục</label>
+                            <select id="adminFoodCategory" class="form-select" required>
+                                <option value="">Đang tải danh mục...</option>
+                                <option value="">pho</option>
+                                <option value="">mi</option>
+                                <option value="">com </option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Giá tiền (VNĐ)</label>
+                            <input type="number" id="adminFoodPrice" class="form-control" placeholder="Ví dụ: 50000">
                         </div>
                     </div>
-                `;
-            }
 
-            // Đẩy toàn bộ khối HTML vào DOM 1 lần duy nhất để tối ưu hiệu năng
-            foodListContainer.innerHTML = htmlBuilder;
-        }
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Đường dẫn ảnh (URL)</label>
+                        <input type="text" id="adminFoodImage" class="form-control" placeholder="https://images.unsplash.com/...">
+                    </div>
 
-        // --- HÀM 3: XỬ LÝ LỌC VÀ TÌM KIẾM ĐỒNG THỜI (HÀM CỐT LÕI) ---
-        function handleFilterAndSearch() {
-            // Lấy giá trị bộ lọc danh mục và từ khóa tìm kiếm (chuyển về chữ thường)
-            let selectedCategory = document.getElementById('categoryFilter').value;
-            let searchKeyword = document.getElementById('searchInput').value.toLowerCase();
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Mô tả ngắn</label>
+                        <textarea id="adminFoodDesc" class="form-control" rows="2" placeholder="Ngon giòn, đậm vị..."></textarea>
+                    </div>
 
-            let resultData = [];
+                    <button type="submit" class="btn btn-warning w-100 fw-bold py-2">
+                        <i class="bi bi-cloud-arrow-up-fill"></i> LƯU VÀO HỆ THỐNG
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
 
-            // Duyệt qua mảng dữ liệu gốc để chắt lọc phần tử thỏa mãn cả 2 điều kiện
-            for (let i = 0; i < allDishes.length; i++) {
-                let dish = allDishes[i];
-                
-                // 1. Kiểm tra điều kiện danh mục (hỗ trợ cả text category hoặc categoryId số)
-                let isCategoryMatch = (selectedCategory === 'all') || 
-                                      (dish.category === selectedCategory || dish.categoryId == selectedCategory);
-                
-                // 2. Kiểm tra điều kiện tên tìm kiếm
-                let isNameMatch = dish.name.toLowerCase().includes(searchKeyword);
+    <div class="offcanvas offcanvas-end" id="miniCart">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title">Giỏ hàng của bạn</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body" id="cartItems"></div>
+        <div class="offcanvas-footer p-3 border-top">
+            <h5 class="mb-3">Tổng tiền: <span id="cartTotal">0</span> VNĐ</h5>
+            <div id="cartFooter"></div>
+        </div>
+    </div>
 
-                // Nếu món ăn vượt qua cả 2 bài kiểm tra thì giữ lại
-                if (isCategoryMatch && isNameMatch) {
-                    resultData.push(dish);
-                }
-            }
-
-            // Xuất kết quả đã lọc ra màn hình
-            renderFoodMenu(resultData);
-        }
-    </script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="main.js"></script>
 </body>
 </html>
