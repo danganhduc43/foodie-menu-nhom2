@@ -1,90 +1,191 @@
-// File: js/main.js
-const menuContainer = document.getElementById("menu-container");
-const searchInput = document.getElementById("search-input");
-const filterButtons = document.querySelectorAll("#category-filter button");
+// 1. Khai báo biến Global
+const API_URL = "https://6a1481de6c7db8aac054a844.mockapi.io/foodsmenu"; 
+const CAT_API_URL = "https://6a1702221b90031f81b1e17c.mockapi.io/categories";
+let foods = []; 
+let cart = [];  
 
-let selectionCategory = "Tất cả";
-let searchQuery = "";
+// 2. Hàm Render Món ăn
+function renderFoods(list) {
+    const foodList = document.getElementById("foodList");
+    if (!foodList) return;
+    foodList.innerHTML = list.map(food => `
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card food-card shadow h-100">
+                <span class="badge ${food.status ? 'bg-success' : 'bg-danger'} badge-custom">
+                    ${food.status ? 'Còn món' : 'Hết món'}
+                </span>
+                <img src="${food.image}" class="card-img-top food-img" onerror="this.src='https://via.placeholder.com/200'">
+                <div class="card-body d-flex flex-column">
+                    <h4 class="fw-bold">${food.name}</h4>
+                    <p class="text-muted small mb-2">${food.description}</p>
+                    <div class="price mb-3">${Number(food.price).toLocaleString()} VNĐ</div>
+                    <button class="btn btn-warning mt-auto" ${!food.status ? "disabled" : ""} 
+                        onclick="addToCart('${food.name}', ${food.price})">🛒 Đặt món</button>
+                        <button class="btn btn-danger mt-2" onclick="deleteFood('${food.id}')">🗑️ Xóa món</button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
 
-function renderMenu(dataToRender) {
-    menuContainer.innerHTML = "";
+// 3. Hàm Fetch dữ liệu (Foods & Categories)
+function fetchFoodsFromServer() {
+    if (typeof $ !== 'undefined') $("#loadingSpinner").show();
+    fetch(API_URL)
+        .then(response => response.json())
+        .then(data => {
+            foods = data;
+            renderFoods(foods);
+            if (typeof $ !== 'undefined') $("#loadingSpinner").hide();
+        })
+        .catch(error => {
+            if (typeof $ !== 'undefined') $("#loadingSpinner").hide();
+            console.error("Lỗi:", error);
+        });
+}
+// Hàm xử lý xóa món ăn
+function deleteFood(id) {
+    if (!confirm("Bạn có chắc chắn muốn xóa món này khỏi menu không?")) return;
 
-    if (!dataToRender || dataToRender.length === 0) {
-        // Áp dụng hiệu ứng jQuery fadeIn khi hiển thị thông báo rỗng (Mục 4 yêu cầu)
-        $(menuContainer).html("<div class='col-12'><p class='text-center fs-5 mt-4 text-muted'>Không tìm thấy món ăn nào phù hợp.</p></div>").hide().fadeIn(400);
-        return;
-    }
-
-    let htmlContent = "";
-
-    dataToRender.forEach(item => {
-        // Đổi từ item.conPhucVu sang tương tác với thuộc tính item.stock (Mục 3 cấu trúc dữ liệu)
-        let badgeHtml = "";
-        if (Number(item.stock) === 0) {
-            badgeHtml = `<span class="badge bg-danger position-absolute top-0 end-0 m-2 fs-6">Hết món</span>`;
+    fetch(`${API_URL}/${id}`, {
+        method: 'DELETE',
+    })
+    .then(res => {
+        if (res.ok) {
+            alert("Xóa thành công!");
+            // Gọi lại hàm load dữ liệu để cập nhật giao diện ngay lập tức
+            fetchFoodsFromServer(); 
+        } else {
+            alert("Có lỗi xảy ra khi xóa!");
         }
+    })
+    .catch(err => console.error("Lỗi:", err));
+}
 
-        // Đổi các thuộc tính sang tiếng Anh chuẩn theo Schema MockAPI trong ảnh 3
-        const cardStructure = `
-            <div class="col food-item-card">
-                <div class="card h-100 shadow-sm position-relative food-card">
-                    ${badgeHtml}
-                    <img src="${item.image}" class="card-img-top food-img" alt="${item.name}">
-                    <div class="card-body d-flex flex-column justify-content-between">
-                        <div>
-                            <span class="badge bg-secondary mb-2">${item.category}</span>
-                            <h5 class="card-title fw-bold">${item.name}</h5>
-                            <p class="text-muted small">${item.description || ''}</p>
-                        </div>
-                        <div class="mt-3">
-                            <p class="price mb-2">${Number(item.price).toLocaleString('vi-VN')} VND</p>
-                            <button class="btn btn-outline-danger w-100 order-btn" ${Number(item.stock) === 0 ? 'disabled' : ''}>
-                                ${Number(item.stock) === 0 ? 'Tạm hết hàng' : 'Xem chi tiết'}
-                            </button>
-                        </div>
-                    </div>
+// Thay link này bằng link API "categories" của bạn
+
+function loadCategories() {
+    fetch(CAT_API_URL)
+        .then(res => res.json())
+        .then(data => {
+            console.log("Dữ liệu danh mục nhận được:", data); 
+
+            // Cải tiến: Kiểm tra xem data có đúng là mảng không trước khi chạy forEach
+            if (Array.isArray(data)) {
+                const adminSelect = document.getElementById("adminFoodCategory");
+                const filterSelect = document.getElementById("categoryFilter");
+                
+                // Reset nội dung
+                adminSelect.innerHTML = '<option value="">Chọn danh mục...</option>';
+                filterSelect.innerHTML = '<option value="all">Tất cả danh mục</option>';
+                
+                // Đổ dữ liệu
+                data.forEach(cat => {
+                    // Kiểm tra xem cat có thuộc tính name không
+                    if (cat.name) {
+                        adminSelect.innerHTML += `<option value="${cat.name}">${cat.name}</option>`;
+                        filterSelect.innerHTML += `<option value="${cat.name}">${cat.name}</option>`;
+                    }
+                });
+            } else {
+                console.error("Lỗi: Dữ liệu API không phải là một mảng (Array). Kiểm tra lại định dạng JSON trên MockAPI.");
+            }
+        })
+        .catch(err => console.error("Lỗi khi load danh mục:", err));
+}
+
+// 4. Các hàm Giỏ hàng
+function addToCart(name, price) {
+    const item = cart.find(i => i.name === name);
+    if (item) { item.quantity++; } else { cart.push({ name, price, quantity: 1 }); }
+    renderCart();
+}
+
+function renderCart() {
+    const cartContainer = document.getElementById("cartItems");
+    const totalContainer = document.getElementById("cartTotal");
+    const footerContainer = document.getElementById("cartFooter");
+    const countDisplay = document.getElementById("cartCount");
+    
+    let html = "";
+    let total = 0;
+    let totalQuantity = 0;
+
+    cart.forEach((item, index) => {
+        total += item.price * item.quantity;
+        totalQuantity += item.quantity;
+        html += `
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <span>${item.name}</span>
+                <div class="d-flex align-items-center">
+                    <button class="btn btn-sm btn-outline-secondary" onclick="updateQty(${index}, -1)">-</button>
+                    <span class="mx-2">${item.quantity.toString().padStart(2, '0')}</span>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="updateQty(${index}, 1)">+</button>
+                    <button class="btn btn-sm btn-danger ms-2" onclick="removeItem(${index})">x</button>
                 </div>
             </div>
         `;
-        htmlContent += cardStructure;
     });
 
-    // Ép hiệu ứng fadeIn mượt mà bằng jQuery khi cập nhật danh sách món ăn (Mục 4 yêu cầu)
-    $(menuContainer).html(htmlContent).hide().fadeIn(300);
+    cartContainer.innerHTML = html;
+    totalContainer.innerText = total.toLocaleString() + " VNĐ";
+    countDisplay.innerText = `(${totalQuantity})`;
+    footerContainer.innerHTML = cart.length > 0 
+        ? `<button class="btn btn-success w-100 mt-3 fw-bold" onclick="checkout()">💳 THANH TOÁN NGAY</button>`
+        : "<p class='text-muted text-center'>Giỏ hàng đang trống!</p>";
 }
 
-function filterAndSearch() {
-    // Đọc dữ liệu từ biến window.menuData lấy từ API về
-    if (!window.menuData) return;
-
-    const finalResult = window.menuData.filter(item => {
-        const matchesCategory = selectionCategory === "Tất cả" || item.category === selectionCategory;
-        const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
-        return matchesCategory && matchesSearch;
-    });
-    renderMenu(finalResult);
+function updateQty(index, change) {
+    cart[index].quantity += change;
+    if (cart[index].quantity <= 0) cart.splice(index, 1);
+    renderCart();
 }
 
-// Lắng nghe sự kiện click danh mục (Dùng Vanilla JS để đáp ứng mục 1)
-filterButtons.forEach(button => {
-    button.addEventListener("click", function() {
-        filterButtons.forEach(btn => btn.classList.remove("active"));
-        this.classList.add("active");
+function removeItem(index) { cart.splice(index, 1); renderCart(); }
 
-        selectionCategory = this.getAttribute("data-category");
-        filterAndSearch();
-    });
-});
-
-// Lắng nghe sự kiện gõ tìm kiếm
-if (searchInput) {
-    searchInput.addEventListener("input", function() {
-        searchQuery = this.value;
-        filterAndSearch();
-    });
+function checkout() { 
+    alert("Thanh toán thành công! Tổng hóa đơn: " + document.getElementById("cartTotal").innerText);
+    cart = []; 
+    renderCart();
+    const cartOffcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('miniCart'));
+    if (cartOffcanvas) cartOffcanvas.hide();
 }
 
-// Khi trang load xong, thực hiện kích hoạt hàm gọi dữ liệu từ API bên file api.js
-document.addEventListener("DOMContentLoaded", function() {
-    fetchMenuData();
+// 5. Logic Search & Filter
+const filter = () => {
+    const kw = document.getElementById("searchInput").value.toLowerCase();
+    const cat = document.getElementById("categoryFilter").value;
+    const filteredList = foods.filter(f => (cat === "all" || f.category === cat) && f.name.toLowerCase().includes(kw));
+    renderFoods(filteredList);
+};
+
+document.getElementById("searchInput").addEventListener("input", filter);
+document.getElementById("categoryFilter").addEventListener("change", filter);
+
+// 6. Xử lý Form Admin & Khởi chạy
+$(document).ready(function() {
+    loadCategories();
+
+    $("#addFoodForm").on("submit", function(event) {
+        event.preventDefault();
+        const newFood = {
+            name: $("#adminFoodName").val(),
+            category: $("#adminFoodCategory").val(),
+            price: Number($("#adminFoodPrice").val()),
+            image: $("#adminFoodImage").val(),
+            description: $("#adminFoodDesc").val(),
+            status: true
+        };
+
+        fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(newFood)
+        })
+        .then(() => {
+            alert("Thêm món thành công!");
+            $("#addFoodForm")[0].reset();
+            fetchFoodsFromServer(); 
+        });
+    });
 });
